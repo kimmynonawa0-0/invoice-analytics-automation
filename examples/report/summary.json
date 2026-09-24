@@ -1,0 +1,75 @@
+{
+  "processed_files": 18,
+  "accepted_invoices": 12,
+  "review_files": 6,
+  "currencies": {
+    "SGD": {
+      "invoice_count": 10,
+      "supplier_count": 4,
+      "total": "4196.25",
+      "monthly": [
+        {
+          "month": "2026-07",
+          "count": 3,
+          "total": "1880.00"
+        },
+        {
+          "month": "2026-08",
+          "count": 3,
+          "total": "1780.00"
+        },
+        {
+          "month": "2026-09",
+          "count": 4,
+          "total": "536.25"
+        }
+      ],
+      "suppliers": [
+        {
+          "supplier": "Cloudline Services",
+          "count": 2,
+          "total": "2250.00"
+        },
+        {
+          "supplier": "Cedar Courier",
+          "count": 2,
+          "total": "1010.00"
+        },
+        {
+          "supplier": "Harbor Office Supplies",
+          "count": 3,
+          "total": "586.25"
+        },
+        {
+          "supplier": "Maple Stationery",
+          "count": 3,
+          "total": "350.00"
+        }
+      ]
+    },
+    "USD": {
+      "invoice_count": 2,
+      "supplier_count": 1,
+      "total": "1175.25",
+      "monthly": [
+        {
+          "month": "2026-07",
+          "count": 1,
+          "total": "450.00"
+        },
+        {
+          "month": "2026-09",
+          "count": 1,
+          "total": "725.25"
+        }
+      ],
+      "suppliers": [
+        {
+          "supplier": "Atlas Design",
+          "count": 2,
+          "total": "1175.25"
+        }
+      ]
+    }
+  }
+}

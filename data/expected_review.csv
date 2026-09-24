@@ -1,0 +1,7 @@
+source_file,code
+z_blank.pdf,no_text
+z_corrupt.pdf,unreadable_pdf
+z_duplicate.pdf,duplicate_invoice
+z_invalid_date.pdf,invalid_date
+z_invalid_total.pdf,invalid_total
+z_missing_total.pdf,missing_field

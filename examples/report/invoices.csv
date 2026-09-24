@@ -1,0 +1,13 @@
+﻿source_file,layout,invoice_number,supplier,invoice_date,currency,total
+invoice_001.pdf,standard,INV-001,Harbor Office Supplies,2026-09-01,SGD,125.50
+invoice_002.pdf,standard,INV-002,Maple Stationery,2026-09-08,SGD,80.00
+invoice_003.pdf,standard,INV-003,Harbor Office Supplies,2026-09-15,SGD,240.75
+invoice_004.pdf,vendor,CL-104,Cloudline Services,2026-07-03,SGD,1050.00
+invoice_005.pdf,standard,CC-205,Cedar Courier,2026-07-10,SGD,650.00
+invoice_006.pdf,vendor,MS-306,Maple Stationery,2026-07-25,SGD,180.00
+invoice_007.pdf,vendor,HO-407,Harbor Office Supplies,2026-08-04,SGD,220.00
+invoice_008.pdf,standard,CL-108,Cloudline Services,2026-08-12,SGD,1200.00
+invoice_009.pdf,vendor,CC-209,Cedar Courier,2026-08-17,SGD,360.00
+invoice_010.pdf,vendor,MS-310,Maple Stationery,2026-09-21,SGD,90.00
+invoice_011.pdf,vendor,AD-511,Atlas Design,2026-07-08,USD,450.00
+invoice_012.pdf,standard,AD-512,Atlas Design,2026-09-18,USD,725.25

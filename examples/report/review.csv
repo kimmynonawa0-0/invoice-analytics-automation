@@ -1,0 +1,7 @@
+﻿source_file,code,message
+z_blank.pdf,no_text,At least one page has no extractable text; manual review or OCR is required.
+z_corrupt.pdf,unreadable_pdf,The PDF could not be read. Check the source file.
+z_duplicate.pdf,duplicate_invoice,Supplier and invoice number already seen in invoice_001.pdf; this file is excluded. Verify both documents.
+z_invalid_date.pdf,invalid_date,Invoice date must be a valid YYYY-MM-DD date.
+z_invalid_total.pdf,invalid_total,"Total must be positive, with at most two decimal places; comma groups must contain three digits."
+z_missing_total.pdf,missing_field,Missing required field: Total.
