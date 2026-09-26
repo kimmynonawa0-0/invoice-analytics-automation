@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "source_file": "standard_reordered.pdf",
+      "expected_status": "accepted",
+      "expected_invoice": {
+        "layout": "standard",
+        "invoice_number": "SP-406",
+        "supplier": "Seabrook Paperworks",
+        "invoice_date": "2026-06-30",
+        "currency": "EUR",
+        "total": "1234.56"
+      }
+    },
+    {
+      "source_file": "vendor_spacing.pdf",
+      "expected_status": "accepted",
+      "expected_invoice": {
+        "layout": "vendor",
+        "invoice_number": "FT-207",
+        "supplier": "Fern Training Studio",
+        "invoice_date": "2026-07-14",
+        "currency": "GBP",
+        "total": "78.50"
+      }
+    },
+    {
+      "source_file": "standard_two_pages.pdf",
+      "expected_status": "accepted",
+      "expected_invoice": {
+        "layout": "standard",
+        "invoice_number": "OC-118",
+        "supplier": "Orchard Computing",
+        "invoice_date": "2026-08-03",
+        "currency": "AUD",
+        "total": "2400.00"
+      }
+    },
+    {
+      "source_file": "vendor_case_two_pages.pdf",
+      "expected_status": "accepted",
+      "expected_invoice": {
+        "layout": "vendor",
+        "invoice_number": "CK-512",
+        "supplier": "Copper Kite Logistics",
+        "invoice_date": "2026-08-22",
+        "currency": "CAD",
+        "total": "900.07"
+      }
+    },
+    {
+      "source_file": "unsupported_labels.pdf",
+      "expected_status": "rejected",
+      "expected_code": "unsupported_layout"
+    },
+    {
+      "source_file": "repeated_total_two_pages.pdf",
+      "expected_status": "rejected",
+      "expected_code": "ambiguous_field"
+    },
+    {
+      "source_file": "missing_amount.pdf",
+      "expected_status": "rejected",
+      "expected_code": "missing_field"
+    },
+    {
+      "source_file": "invalid_calendar_date.pdf",
+      "expected_status": "rejected",
+      "expected_code": "invalid_date"
+    }
+  ]
+}

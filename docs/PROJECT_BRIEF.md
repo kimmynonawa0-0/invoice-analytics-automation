@@ -36,6 +36,13 @@ The 6/18 review proportion is deliberately constructed to exercise failure
 handling. It is not an estimate of a business's invoice quality or the system's
 real-world success rate.
 
+The separate evaluation set contains eight additional synthetic PDFs authored
+outside the demo generator. The recorded evaluation correctly extracts four
+supported invoices (20 of 20 business fields match) and rejects four documents
+for the expected reasons. These results describe that fixed set, not general
+accuracy on supplier documents. See [the evaluation report](../examples/evaluation.json)
+and [fixture provenance](../data/evaluation/README.md).
+
 ## Example analytical finding
 
 Cloudline Services accounts for SGD 2,250.00, approximately 53.6% of accepted
@@ -67,6 +74,9 @@ require confirming completeness and considering the reporting period.
 - Decimal arithmetic avoids binary floating-point rounding in aggregation.
 - Currency separation avoids a meaningless combined total without exchange rates.
 - Automated tests compare extracted fields with expected values and cover errors.
+- A separately authored PDF evaluation set checks extraction and rejection
+  outcomes beyond the original demo generator. Its score includes expected
+  fields from incorrectly rejected documents, keeping failures visible.
 
 The implementation uses Python, pypdf, openpyxl, and standard-library modules.
 It does not use a language model to interpret invoices. AI-assisted development

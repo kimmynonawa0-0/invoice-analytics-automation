@@ -43,6 +43,7 @@ limitations, and the [architecture](docs/ARCHITECTURE.md) for design decisions.
 - Produce a formatted Excel workbook and an offline HTML dashboard with a currency filter.
 - Calculate spending by supplier and month without combining currencies.
 - Rebuild reports on every run, with command exit statuses suitable for scheduled jobs.
+- Evaluate extraction and rejection behavior against separately authored PDF fixtures.
 
 ## Quick start
 
@@ -211,10 +212,14 @@ rejected, the dashboard shows an empty-data message and the complete review queu
 invoice_analytics/       Extraction, validation, batch processing, reports, CLI
 data/samples/           Fictional PDFs, including intentional review cases
 data/expected_*.csv      Reference values used by tests
+data/evaluation/        Separately authored PDFs, expected results, and provenance
 examples/report/        Committed sample outputs for portfolio review
+examples/evaluation.json Recorded results for the separate evaluation set
 docs/                   Project brief, architecture, and dashboard preview
 tests/                  Automated behavior and report checks
 tools/generate_samples.py
+tools/build_evaluation_fixtures.py
+tools/evaluate.py
 .github/workflows/tests.yml
 pyproject.toml
 requirements.txt
@@ -239,6 +244,48 @@ demonstration reports after changing the fixtures:
 .\.venv\Scripts\python.exe tools/generate_samples.py
 .\.venv\Scripts\python.exe -m invoice_analytics --input data/samples --output examples/report
 ```
+
+### Evaluate extraction on separate fixtures
+
+The original demo PDFs are generated from their expected CSV values. A second
+fixture set in [`data/evaluation/`](data/evaluation/README.md) uses separately
+authored PDF content and a different creation path. Its expected results are
+maintained in a separate JSON file; the fixture builder never reads that file
+or the demo CSV. Tests read the committed PDFs without regenerating them.
+
+Run the evaluation from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m tools.evaluate --output outputs/evaluation.json
+```
+
+The report separates correct extraction, correct rejection, incorrect
+acceptance, incorrect rejection, incorrect field values, and wrong rejection
+reasons. Field matching uses the five business fields from every document
+expected to be accepted. A supported document that is incorrectly rejected
+still contributes five expected fields, so rejection cannot inflate the score.
+Detected layout and source filename are also checked for each accepted record.
+
+Cases cover both supported layouts, reordered fields, case and whitespace
+variations, thousands separators, multiple pages, unsupported labels, repeated
+fields, a missing total, and an invalid date. A mismatch causes a nonzero exit
+status, as does an invalid fixture inventory. GitHub Actions runs this evaluation
+alongside the test suite.
+
+The [recorded evaluation](examples/evaluation.json) contains these results for
+the eight included fixtures:
+
+| Check | Result |
+| --- | --- |
+| Supported invoices extracted with all expected values | 4 / 4 |
+| Invalid or unsupported invoices rejected for the expected reason | 4 / 4 |
+| Matching business fields across expected valid invoices | 20 / 20 |
+| Incorrect extraction, acceptance, rejection, or rejection reason | 0 |
+
+These are synthetic fixtures created with AI assistance, independent of the
+original demo generator. They are not real supplier documents or an independent
+human validation study. Results describe this small contract evaluation and
+must not be presented as general invoice extraction accuracy.
 
 ## Scope and limitations
 

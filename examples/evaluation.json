@@ -1,0 +1,185 @@
+{
+  "evaluation_set": "synthetic-independent-v1",
+  "scope": "Separately authored synthetic fixtures; not a real-world accuracy estimate.",
+  "passed": true,
+  "metrics": {
+    "expected_documents": 8,
+    "expected_accepted": 4,
+    "expected_rejected": 4,
+    "correct_extraction": 4,
+    "correct_rejection": 4,
+    "incorrect_extraction": 0,
+    "incorrect_acceptance": 0,
+    "incorrect_rejection": 0,
+    "wrong_rejection_reason": 0,
+    "matched_fields": 20,
+    "expected_fields": 20
+  },
+  "integrity_errors": [],
+  "cases": [
+    {
+      "source_file": "standard_reordered.pdf",
+      "expected_status": "accepted",
+      "passed": true,
+      "actual_status": "accepted",
+      "actual_invoice": {
+        "source_file": "standard_reordered.pdf",
+        "layout": "standard",
+        "invoice_number": "SP-406",
+        "supplier": "Seabrook Paperworks",
+        "invoice_date": "2026-06-30",
+        "currency": "EUR",
+        "total": "1234.56"
+      },
+      "expected_invoice": {
+        "source_file": "standard_reordered.pdf",
+        "layout": "standard",
+        "invoice_number": "SP-406",
+        "supplier": "Seabrook Paperworks",
+        "invoice_date": "2026-06-30",
+        "currency": "EUR",
+        "total": "1234.56"
+      },
+      "field_matches": {
+        "invoice_number": true,
+        "supplier": true,
+        "invoice_date": true,
+        "currency": true,
+        "total": true
+      },
+      "mismatched_fields": []
+    },
+    {
+      "source_file": "vendor_spacing.pdf",
+      "expected_status": "accepted",
+      "passed": true,
+      "actual_status": "accepted",
+      "actual_invoice": {
+        "source_file": "vendor_spacing.pdf",
+        "layout": "vendor",
+        "invoice_number": "FT-207",
+        "supplier": "Fern Training Studio",
+        "invoice_date": "2026-07-14",
+        "currency": "GBP",
+        "total": "78.50"
+      },
+      "expected_invoice": {
+        "source_file": "vendor_spacing.pdf",
+        "layout": "vendor",
+        "invoice_number": "FT-207",
+        "supplier": "Fern Training Studio",
+        "invoice_date": "2026-07-14",
+        "currency": "GBP",
+        "total": "78.50"
+      },
+      "field_matches": {
+        "invoice_number": true,
+        "supplier": true,
+        "invoice_date": true,
+        "currency": true,
+        "total": true
+      },
+      "mismatched_fields": []
+    },
+    {
+      "source_file": "standard_two_pages.pdf",
+      "expected_status": "accepted",
+      "passed": true,
+      "actual_status": "accepted",
+      "actual_invoice": {
+        "source_file": "standard_two_pages.pdf",
+        "layout": "standard",
+        "invoice_number": "OC-118",
+        "supplier": "Orchard Computing",
+        "invoice_date": "2026-08-03",
+        "currency": "AUD",
+        "total": "2400.00"
+      },
+      "expected_invoice": {
+        "source_file": "standard_two_pages.pdf",
+        "layout": "standard",
+        "invoice_number": "OC-118",
+        "supplier": "Orchard Computing",
+        "invoice_date": "2026-08-03",
+        "currency": "AUD",
+        "total": "2400.00"
+      },
+      "field_matches": {
+        "invoice_number": true,
+        "supplier": true,
+        "invoice_date": true,
+        "currency": true,
+        "total": true
+      },
+      "mismatched_fields": []
+    },
+    {
+      "source_file": "vendor_case_two_pages.pdf",
+      "expected_status": "accepted",
+      "passed": true,
+      "actual_status": "accepted",
+      "actual_invoice": {
+        "source_file": "vendor_case_two_pages.pdf",
+        "layout": "vendor",
+        "invoice_number": "CK-512",
+        "supplier": "Copper Kite Logistics",
+        "invoice_date": "2026-08-22",
+        "currency": "CAD",
+        "total": "900.07"
+      },
+      "expected_invoice": {
+        "source_file": "vendor_case_two_pages.pdf",
+        "layout": "vendor",
+        "invoice_number": "CK-512",
+        "supplier": "Copper Kite Logistics",
+        "invoice_date": "2026-08-22",
+        "currency": "CAD",
+        "total": "900.07"
+      },
+      "field_matches": {
+        "invoice_number": true,
+        "supplier": true,
+        "invoice_date": true,
+        "currency": true,
+        "total": true
+      },
+      "mismatched_fields": []
+    },
+    {
+      "source_file": "unsupported_labels.pdf",
+      "expected_status": "rejected",
+      "passed": true,
+      "actual_status": "rejected",
+      "actual_code": "unsupported_layout",
+      "actual_message": "Expected exactly one supported invoice layout per PDF.",
+      "expected_code": "unsupported_layout"
+    },
+    {
+      "source_file": "repeated_total_two_pages.pdf",
+      "expected_status": "rejected",
+      "passed": true,
+      "actual_status": "rejected",
+      "actual_code": "ambiguous_field",
+      "actual_message": "Repeated field: Total. Review the document manually.",
+      "expected_code": "ambiguous_field"
+    },
+    {
+      "source_file": "missing_amount.pdf",
+      "expected_status": "rejected",
+      "passed": true,
+      "actual_status": "rejected",
+      "actual_code": "missing_field",
+      "actual_message": "Missing required field: Amount Due.",
+      "expected_code": "missing_field"
+    },
+    {
+      "source_file": "invalid_calendar_date.pdf",
+      "expected_status": "rejected",
+      "passed": true,
+      "actual_status": "rejected",
+      "actual_code": "invalid_date",
+      "actual_message": "Invoice date must be a valid YYYY-MM-DD date.",
+      "expected_code": "invalid_date"
+    }
+  ]
+}
