@@ -61,6 +61,8 @@ require confirming completeness and considering the reporting period.
 
 - Known layouts make the supported behavior testable and explicit.
 - A review queue makes failures visible instead of silently dropping files.
+- Conflicting versions of the same invoice are all excluded from spending until
+  resolved, so filename order cannot decide which amount is reported.
 - Source filenames let an analyst trace a result back to its document.
 - Decimal arithmetic avoids binary floating-point rounding in aggregation.
 - Currency separation avoids a meaningless combined total without exchange rates.

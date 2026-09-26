@@ -59,15 +59,28 @@ errors are allowed to fail the run rather than being mislabeled as bad invoices.
 ## Duplicate policy
 
 The identity is the normalized supplier name plus invoice number, compared
-without case sensitivity. Files are processed in filename order. The first
-valid occurrence is retained; later occurrences are excluded. A later record
-with different date, currency, or total receives `conflicting_duplicate`.
-The message identifies the earlier file so both can be reviewed.
+without case sensitivity. After field validation, invoices are grouped by that
+identity before any member is accepted. The group is evaluated as a whole:
+
+- When every member agrees on date, currency, and total, the first file in
+  filename order is retained. Later copies receive `duplicate_invoice`.
+- When any member disagrees on date, currency, or total, every member receives
+  `conflicting_duplicate` and the entire group is excluded from totals. This
+  includes matching copies within the conflicting group. Review messages name
+  the related files so the user can reconcile them.
+
+Filename order therefore cannot choose the accepted amount for a conflicting
+group. Other valid invoice groups continue to contribute to reports. Each
+processed file appears once, either as an accepted invoice or a review issue.
+Files that fail field validation retain their validation issue and do not
+participate in duplicate grouping.
 
 This assumes a supplier does not reuse invoice numbers within the batch. It
 does not match supplier aliases, establish supplier legal identity, or remember
-invoices from previous runs. A conflict does not retroactively remove the first
-record: reports are provisional until review is complete.
+invoices from previous runs. To resolve a conflict in the command-line workflow,
+verify the sources and rerun with a corrected input batch containing only the
+authoritative invoice for that identity. Original documents can be retained
+separately for reference.
 
 ## Monetary calculations and analysis
 

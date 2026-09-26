@@ -75,15 +75,65 @@ class BatchTests(unittest.TestCase):
         self.assertEqual([{"source_file": item.source_file, "code": item.code} for item in result.issues], expected_review)
         self.assertEqual(result.processed, 18)
 
-    def test_conflicting_duplicates_keep_first_and_flag_later(self):
+    def test_conflicting_duplicates_exclude_every_group_member(self):
+        for old, new in [("125.50", "999.00"), ("2026-09-01", "2026-09-02"), ("SGD", "USD")]:
+            with self.subTest(conflicting_field=old), tempfile.TemporaryDirectory() as temporary:
+                folder = Path(temporary)
+                render_pdf(folder / "a.pdf", STANDARD.splitlines())
+                conflicting = STANDARD.replace(old, new).replace("Example Supplier", "example   supplier")
+                render_pdf(folder / "b.PDF", conflicting.splitlines())
+                result = process_directory(folder)
+                self.assertEqual(result.invoices, [])
+                self.assertEqual(
+                    [(issue.source_file, issue.code) for issue in result.issues],
+                    [("a.pdf", "conflicting_duplicate"), ("b.PDF", "conflicting_duplicate")],
+                )
+                for issue in result.issues:
+                    self.assertIn("a.pdf", issue.message)
+                    self.assertIn("b.PDF", issue.message)
+
+    def test_later_conflict_also_excludes_earlier_exact_copies(self):
         with tempfile.TemporaryDirectory() as temporary:
             folder = Path(temporary)
             render_pdf(folder / "a.pdf", STANDARD.splitlines())
-            render_pdf(folder / "b.PDF", STANDARD.replace("125.50", "999.00").replace("Example Supplier", "example   supplier").splitlines())
+            render_pdf(folder / "b.pdf", STANDARD.splitlines())
+            render_pdf(folder / "c.pdf", STANDARD.replace("125.50", "999.00").splitlines())
+            render_pdf(folder / "d.pdf", STANDARD.replace("INV-001", "INV-002").splitlines())
             result = process_directory(folder)
-            self.assertEqual(len(result.invoices), 1)
-            self.assertEqual(result.invoices[0].total, Decimal("125.50"))
-            self.assertEqual(result.issues[0].code, "conflicting_duplicate")
+            self.assertEqual([invoice.source_file for invoice in result.invoices], ["d.pdf"])
+            self.assertEqual(
+                [(issue.source_file, issue.code) for issue in result.issues],
+                [(name, "conflicting_duplicate") for name in ["a.pdf", "b.pdf", "c.pdf"]],
+            )
+            self.assertEqual(result.processed, 4)
+
+    def test_conflict_outcome_does_not_depend_on_filename_order(self):
+        for first_total, last_total in [("125.50", "999.00"), ("999.00", "125.50")]:
+            with self.subTest(first_total=first_total), tempfile.TemporaryDirectory() as temporary:
+                folder = Path(temporary)
+                render_pdf(folder / "a.pdf", STANDARD.replace("125.50", first_total).splitlines())
+                render_pdf(folder / "z.pdf", STANDARD.replace("125.50", last_total).splitlines())
+                render_pdf(folder / "m.pdf", STANDARD.replace("INV-001", "INV-002").splitlines())
+                render_pdf(folder / "n.pdf", STANDARD.replace("Total: 125.50", "Total:").splitlines())
+                result = process_directory(folder)
+                self.assertEqual([invoice.source_file for invoice in result.invoices], ["m.pdf"])
+                self.assertEqual(
+                    [(issue.source_file, issue.code) for issue in result.issues],
+                    [("a.pdf", "conflicting_duplicate"), ("n.pdf", "missing_field"), ("z.pdf", "conflicting_duplicate")],
+                )
+                self.assertEqual(build_summary(result)["currencies"]["SGD"]["total"], "125.50")
+
+    def test_exact_duplicates_still_keep_first_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            for name in ["c.pdf", "a.pdf", "b.PDF"]:
+                render_pdf(folder / name, STANDARD.splitlines())
+            result = process_directory(folder)
+            self.assertEqual([invoice.source_file for invoice in result.invoices], ["a.pdf"])
+            self.assertEqual(
+                [(issue.source_file, issue.code) for issue in result.issues],
+                [("b.PDF", "duplicate_invoice"), ("c.pdf", "duplicate_invoice")],
+            )
 
     def test_empty_and_missing_inputs_fail(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -177,9 +177,21 @@ is accepted. Repeated labels, missing fields, invalid values, unsupported
 layouts, encrypted PDFs, and pages without text require review. No OCR is used.
 
 Duplicate detection compares supplier and invoice number without case
-sensitivity. Filename order determines which valid occurrence is retained;
-later copies or conflicts are excluded and refer to the first source file.
-Review conflicts before relying on totals. There is no deduplication across runs.
+sensitivity. When all matching records agree on date, currency, and total,
+the first file in filename order is retained and later copies are excluded.
+If any matching record disagrees on those values, **every invoice in that group
+is excluded from spending totals** and marked `conflicting_duplicate` in the
+review report. The review details identify the related source files.
+
+For example, two invoices for the same supplier and invoice number showing
+SGD 125.50 and SGD 999.00 both require review. Neither amount is accepted just
+because its file was processed first. This also applies if a third file is an
+exact copy of one of those conflicting invoices.
+
+To resolve a conflict, verify the documents and create a corrected input batch
+containing only the authoritative invoice for that identity, then rerun the
+command. Retain the original documents separately for reference. There is no
+deduplication across runs.
 
 ### Exit statuses
 
