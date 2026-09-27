@@ -17,9 +17,10 @@ the implementation, automated tests, documentation, and demonstration assets.
 The project direction and scope were selected by the author, with AI used to
 help build the working application.
 
-The initial version is prepared for publication as a single baseline commit.
-That commit captures the completed initial implementation; the repository's
-history does not document the intermediate AI-assisted development steps.
+The repository history contains focused commits for the processing pipeline,
+duplicate handling, independent evaluation, and browser review workflow. The
+commit history reflects the project's development milestones; it is not a
+transcript of every AI-assisted prompt or intermediate experiment.
 
 Invoice processing itself uses explicit parsing and validation rules. Running
 the application does not call an AI model or require an AI subscription.
@@ -35,6 +36,20 @@ and keeps a review queue for documents that do not meet its validation rules.
 invoice layouts. The included demonstration uses fictional data. See the
 [project brief](docs/PROJECT_BRIEF.md) for the business context, findings, and
 limitations, and the [architecture](docs/ARCHITECTURE.md) for design decisions.
+
+### Portfolio explanation
+
+Businesses often receive invoices as PDFs but track spending manually in
+spreadsheets. Manual transcription is repetitive, and missing values or
+duplicate invoices can distort reports. This project extracts invoice fields,
+validates them, routes uncertain documents to a review queue, and generates
+audit-friendly spending reports.
+
+The key design decision is to keep the final approval with a person. The
+automation handles repeatable extraction and checks, while reviewers can
+compare source PDFs, correct verified values, approve or reject records, and
+export the decision history. This makes the workflow easier to explain and
+safer to extend than silently guessing missing data.
 
 ## Features
 
