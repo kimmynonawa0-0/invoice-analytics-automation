@@ -4,14 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "invoice-analytics-automation"
-version = "1.0.0"
+version = "1.1.0"
 description = "Batch invoice extraction, validation, and currency-aware spend reporting."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["pypdf>=6,<7", "openpyxl>=3.1,<4"]
+dependencies = ["pypdf>=6,<7", "openpyxl>=3.1,<4", "Flask>=3.1,<4"]
 
 [project.scripts]
 invoice-analytics = "invoice_analytics.cli:main"
+invoice-review = "invoice_analytics.review_app:main"
 
 [tool.setuptools.packages.find]
 include = ["invoice_analytics*"]
+
+[tool.setuptools.package-data]
+invoice_analytics = ["templates/*.html", "static/*.css", "static/*.js"]

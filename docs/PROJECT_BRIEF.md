@@ -14,6 +14,12 @@ five fields, identifies potential duplicates, and produces spreadsheet exports
 and an offline spending dashboard. Files that fail validation are separated
 into a review queue with an explanation and source filename.
 
+A local review workspace lets an analyst inspect each source PDF, correct
+extracted fields, and approve or reject records with notes. The reviewed export
+contains approved records only, along with rejection details and decision history.
+Progress is saved locally, and each completed export is retained as a separate
+snapshot.
+
 The intended users are small operations teams or analysts who repeatedly receive
 invoices in known formats. This is a local portfolio implementation with
 fictional demonstration data; it has not been deployed to a real client.
@@ -68,6 +74,8 @@ require confirming completeness and considering the reporting period.
 
 - Known layouts make the supported behavior testable and explicit.
 - A review queue makes failures visible instead of silently dropping files.
+- Explicit review decisions and correction notes preserve the connection between
+  extracted values, human corrections, and the records used in a report.
 - Conflicting versions of the same invoice are all excluded from spending until
   resolved, so filename order cannot decide which amount is reported.
 - Source filenames let an analyst trace a result back to its document.
@@ -78,7 +86,7 @@ require confirming completeness and considering the reporting period.
   outcomes beyond the original demo generator. Its score includes expected
   fields from incorrectly rejected documents, keeping failures visible.
 
-The implementation uses Python, pypdf, openpyxl, and standard-library modules.
+The implementation uses Python, pypdf, openpyxl, Flask, and standard-library modules.
 It does not use a language model to interpret invoices. AI-assisted development
 and AI-powered invoice extraction are different claims; describe development
 assistance accurately when discussing how the repository was built.

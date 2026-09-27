@@ -31,10 +31,14 @@ flowchart LR
 | `models.py` | Define invoice and review records shared by other modules |
 | `pipeline.py` | Discover PDFs, isolate expected file failures, detect duplicates |
 | `reporting.py` | Aggregate accepted records and write CSV, Excel, JSON, and HTML |
+| `review.py` | Persist uploaded batches, validate decisions, and publish approved report snapshots |
+| `review_app.py` | Serve the local review screen and HTTP endpoints |
+| `templates/` and `static/` | PDF preview, correction form, batch navigation, and downloads |
 
-The application runs locally. Its processing path makes no network calls and
-requires no credentials, server, database, or paid API. The HTML dashboard uses
-embedded styles and a small currency filter; it loads no external assets.
+Processing runs locally without external API calls or credentials. The CLI
+requires no server. The browser review workflow starts a Flask server bound to
+`127.0.0.1`; it is intended for one local user, not public hosting. Styles and
+scripts are served locally. Neither workflow requires a database or paid API.
 
 ## Validation contract
 
@@ -102,13 +106,50 @@ prefix; Excel text cells are explicitly stored as strings. Dashboard text is
 HTML-escaped. These protections keep extracted content from becoming formulas
 or HTML markup in the generated reports.
 
-Each run rebuilds all five reports from the current input folder. Files are
+Each CLI run rebuilds all five reports from the current input folder. Files are
 generated in a temporary folder before replacement begins. Each individual
 replacement is atomic on the same filesystem, but replacement of the complete
 five-file set is not a filesystem transaction. Close open Excel workbooks before
 rerunning. An interrupted replacement can leave a mixed report set; rerun the
 batch before relying on it. A failed input scan leaves any previous reports in
 place; check the command's exit status.
+
+## Review decisions and persistence
+
+The browser workspace copies uploads into a new batch. All records begin
+pending, including successful extractions. Original fields, source PDFs, and
+initial issue codes are preserved. Approval uses the existing date, currency,
+and amount validation rules. Partial extraction pre-fills only unambiguous
+fields. Unreadable, encrypted, or textless documents cannot be approved.
+
+The service allows at most one approved record per normalized supplier and
+invoice number, including after manual corrections. A flagged invoice or a
+correction needs a note; rejection also needs a note. The bulk approval action
+only accepts pending, unchanged, validated records with no already approved
+identity. Corrected, reopened records require an explicit new approval.
+
+Approved or rejected records must be reopened before their decisions can change.
+Successful decisions increment a batch revision. Browser requests include the
+revision they displayed, and stale requests fail with HTTP 409. A local file lock
+serializes mutations; JSON is saved to a temporary file and replaced atomically.
+Progress survives browser and server restarts. Decision timestamps record local
+workflow events; this is not a tamper-proof audit trail or authenticated identity
+system. The user with filesystem access controls the stored JSON and PDFs.
+
+Review exports require a decision for every record. A fresh export directory
+contains the five reports and `review_decisions.json`. Only after all files are
+generated does the service register the completed snapshot for downloads. Existing
+snapshots remain unchanged after corrections and are identified by the review
+revision they captured. Downloads serve only registered snapshots and known
+report filenames. A failed generation does not replace an earlier report set.
+
+The browser workspace's default `.invoice-review/` folder is ignored by Git.
+Upload names are sanitized; collisions are rejected. Requests have a batch size
+limit, and mutations require a per-server token embedded in the local review
+page. Host checks restrict requests to localhost. The development server has
+debug mode disabled. These constraints support a local tool; deployment for
+multiple users would need authentication, authorization, storage policies, and
+a production server.
 
 ## Verification scope
 

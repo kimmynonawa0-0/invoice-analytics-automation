@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="review-token" content="{{ review_token }}">
+  <title>Invoice review | Invoice Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='review.css') }}">
+  <script src="{{ url_for('static', filename='review.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to invoice review</a>
+  <header class="masthead">
+    <div class="header-inner">
+      <div class="brand-row"><div class="brand"><span class="brand-mark" aria-hidden="true">IA</span><span>INVOICE ANALYTICS</span></div><span class="local-label"><span aria-hidden="true"></span>Local workspace</span></div>
+      <div class="header-copy"><div><p class="eyebrow">DOCUMENTS / DECISIONS / INSIGHTS</p><h1>Invoice review</h1><p class="subtitle">Check extracted details, resolve exceptions, and turn approved invoices into a spending report.</p></div><div class="workflow" aria-label="Workflow"><span><b>1</b> Import</span><span><b>2</b> Review</span><span><b>3</b> Export</span></div></div>
+    </div>
+  </header>
+
+  <main class="main-wrap">
+    <div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true">Loading saved batches…</div>
+    <section class="import-panel card" aria-labelledby="import-title">
+      <div class="import-heading"><h2 id="import-title">Start with your documents</h2><p>Upload PDF invoices, or explore the fictional demo batch.</p></div>
+      <form id="upload-form" class="upload-form">
+        <label class="file-label" for="pdf-files">Choose PDF invoices</label>
+        <input id="pdf-files" name="files" type="file" accept="application/pdf,.pdf" multiple required aria-describedby="upload-hint">
+        <p id="upload-hint" class="small-note">Selectable-text PDFs in a supported layout. Scans require a readable, selectable-text replacement.</p>
+        <div class="button-row"><button id="upload-button" class="button primary" type="submit" disabled>Import invoices</button><button id="demo-button" class="button secondary" type="button">Use demo invoices</button></div>
+      </form>
+      <div class="saved-batches"><label for="batch-select">Saved batches</label><select id="batch-select" disabled><option value="">No batches yet</option></select><p id="batch-meta" class="small-note">Your batches and review decisions are saved locally.</p></div>
+    </section>
+
+    <section id="batch-overview" aria-label="Batch overview" hidden>
+      <div class="section-title"><h2>Review progress</h2><span id="batch-revision" class="small-note"></span></div>
+      <div class="metrics">
+        <article class="metric pending-metric"><span>Pending review</span><strong id="pending-count">0</strong><p>Awaiting a decision</p></article>
+        <article class="metric approved-metric"><span>Approved</span><strong id="approved-count">0</strong><p>Included in spending</p></article>
+        <article class="metric rejected-metric"><span>Rejected</span><strong id="rejected-count">0</strong><p>Excluded from spending</p></article>
+      </div>
+      <div class="spend-bar"><h3>Approved spending</h3><div id="spending" class="spending"></div><p class="small-note">Currencies stay separate. Amounts reflect invoices, not verified payments.</p></div>
+    </section>
+
+    <section id="workspace" class="workspace-section" aria-labelledby="workspace-title" tabindex="-1">
+      <div class="section-title"><div><h2 id="workspace-title">Review the details</h2><p class="small-note">Compare each PDF with its record before approving.</p></div><button id="approve-ready-button" class="button secondary" type="button" disabled>Approve validated invoices</button></div>
+      <p id="ready-hint" class="small-note" hidden></p>
+      <div id="empty-workspace" class="empty-workspace card"><span class="empty-icon" aria-hidden="true">↗</span><h3>Your review workspace is ready</h3><p>Import a batch above to compare documents, correct extracted fields, and record your decisions.</p></div>
+      <div id="review-workspace" class="review-workspace" hidden>
+        <aside class="document-panel card" aria-label="Invoices in this batch">
+          <div class="document-heading"><h3>Documents <span id="document-count" class="count-badge">0</span></h3><label for="status-filter" class="visually-hidden">Filter by review status</label><select id="status-filter"><option value="all">All documents</option><option value="pending">Pending review</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></div>
+          <div id="document-list" class="document-list"></div>
+          <p id="no-matches" class="no-matches" hidden>No documents match this filter.</p>
+        </aside>
+        <div id="record-detail" class="record-detail" hidden>
+          <section class="preview-panel card" aria-labelledby="preview-title">
+            <div class="panel-heading"><div><p class="eyebrow muted">SOURCE DOCUMENT</p><h3 id="preview-title">Invoice PDF</h3></div><a id="open-pdf" class="text-link" target="_blank" rel="noopener">Open PDF ↗</a></div>
+            <iframe id="pdf-preview" title="Selected invoice PDF" loading="lazy"></iframe>
+            <div id="preview-unavailable" class="preview-unavailable" hidden><span aria-hidden="true">!</span><h4>Manual review required</h4><p id="preview-unavailable-text"></p></div>
+            <p class="preview-note small-note">If the preview is unavailable in your browser, use Open PDF.</p>
+          </section>
+          <section class="editor-panel card" aria-labelledby="editor-title">
+            <div class="panel-heading"><div><p class="eyebrow muted">EXTRACTED RECORD</p><h3 id="editor-title">Invoice details</h3></div><span id="record-status" class="status-badge"></span></div>
+            <p id="record-source" class="record-source"></p><p id="record-layout" class="small-note"></p>
+            <div id="issue-box" class="issue-box" hidden><span class="issue-label">Original extraction issue</span><strong id="issue-title"></strong><p id="issue-message"></p></div>
+            <p id="record-lock-hint" class="small-note" hidden>Reopen this record to change its fields or decision.</p>
+            <form id="review-form" novalidate>
+              <div class="field"><label for="invoice-number">Invoice number</label><input id="invoice-number" name="invoice_number" type="text" required autocomplete="off"></div>
+              <div class="field"><label for="supplier">Supplier</label><input id="supplier" name="supplier" type="text" required autocomplete="off"></div>
+              <div class="field"><label for="invoice-date">Invoice date</label><input id="invoice-date" name="invoice_date" type="text" placeholder="YYYY-MM-DD" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" required autocomplete="off" aria-describedby="date-hint"><span id="date-hint" class="field-hint">Use YYYY-MM-DD, for example 2026-09-01.</span></div>
+              <div class="field-pair"><div class="field"><label for="currency">Currency</label><input id="currency" name="currency" type="text" list="currencies" required autocomplete="off"><datalist id="currencies"><option value="SGD"><option value="USD"><option value="EUR"><option value="GBP"><option value="AUD"><option value="CAD"></datalist></div><div class="field"><label for="total">Total</label><input id="total" name="total" type="text" inputmode="decimal" required autocomplete="off"></div></div>
+              <div class="field"><label for="review-note">Decision note <span class="optional">if needed</span></label><textarea id="review-note" name="note" rows="3" placeholder="Explain a correction or why this invoice is rejected." aria-describedby="note-hint"></textarea><span id="note-hint" class="field-hint">Required for flagged approvals, corrections, and rejections. Saved with your decision.</span></div>
+              <div id="unsaved-notice" class="unsaved-notice" hidden>Unsaved changes <button id="reset-edits" type="button">Reset edits</button></div>
+              <div class="editor-actions"><button id="approve-button" class="button primary" type="submit">Save &amp; approve</button><button id="reject-button" class="button danger" type="button">Reject</button><button id="reopen-button" class="button secondary" type="button" hidden>Reopen for review</button></div>
+            </form>
+            <details class="record-details"><summary>Original extracted values</summary><dl id="original-fields"></dl></details>
+            <details class="record-details"><summary>Extracted document text</summary><pre id="extracted-text" class="extracted-text"></pre></details>
+            <details class="record-details"><summary id="history-title">Decision history</summary><ol id="decision-history" class="decision-history"></ol><p id="no-history" class="small-note">No review decisions yet.</p></details>
+          </section>
+        </div>
+        <div id="empty-selection" class="empty-selection card" hidden><h3>No document selected</h3><p>Select another status to continue reviewing.</p></div>
+      </div>
+    </section>
+
+    <section id="exports-panel" class="exports-panel card" aria-labelledby="exports-title" hidden>
+      <div class="section-title"><div><p class="eyebrow muted">APPROVED DATA / READY TO SHARE</p><h2 id="exports-title">Reports &amp; exports</h2><p id="export-hint" class="small-note">Resolve every pending record to create a report.</p></div><button id="export-button" class="button primary" type="button" disabled>Create report snapshot</button></div>
+      <div id="export-list" class="export-list"></div><p id="no-exports" class="small-note">No reports created for this batch yet.</p>
+    </section>
+    <footer><span>Invoice Analytics Automation</span><span>Review decisions stay local. Only approved invoices contribute to reports.</span></footer>
+  </main>
+</body>
+</html>

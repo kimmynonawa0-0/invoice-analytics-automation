@@ -5,6 +5,9 @@ spending report. The application extracts fields from supported PDF layouts,
 flags documents that need review, and summarizes accepted invoices by currency,
 month, and supplier.
 
+A local browser workspace also supports document preview, corrections, explicit
+approval or rejection, saved decision history, and exports from approved records.
+
 ![Invoice spending dashboard](docs/assets/dashboard.png)
 
 ## AI-assisted development
@@ -44,6 +47,63 @@ limitations, and the [architecture](docs/ARCHITECTURE.md) for design decisions.
 - Calculate spending by supplier and month without combining currencies.
 - Rebuild reports on every run, with command exit statuses suitable for scheduled jobs.
 - Evaluate extraction and rejection behavior against separately authored PDF fixtures.
+- Review PDF originals alongside editable fields, with notes for corrections and rejections.
+- Save review progress locally and download complete, versioned report bundles.
+
+## Review invoices in the browser
+
+From the repository root, install or update the environment and start the local
+review application:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m invoice_analytics.review_app
+```
+
+Open **http://127.0.0.1:8765** in your browser. If the environment is already set
+up, run just the last command. Keep the terminal running while using the screen;
+press `Ctrl+C` to stop it. To use another port, add `--port 8766`.
+
+1. Load the demonstration batch or select your own PDFs. Uploads are copied into
+   local storage; the source files on your computer are not changed.
+2. Select a document to see its PDF, extracted fields, and original extraction
+   issue. Every document starts pending. Nothing contributes to spending until
+   it is approved.
+3. Compare each value with the source. Correct fields when you can verify the
+   correct value, add a note, then approve. Missing values remain blank and
+   ambiguous values are not guessed. Rejections also require a note.
+4. For the included demo, the bulk approval action accepts the 12 validated
+   records. Inspect the remaining six flagged records and reject those without
+   a verifiable correction. Unreadable, encrypted, or textless documents must be
+   rejected and replaced with readable PDFs.
+5. Resolve conflicting copies by approving at most one invoice per supplier and
+   invoice number, with an explanation, and rejecting the other copies. Duplicate
+   checks are also applied after editing the identity fields.
+6. Once every record is approved or rejected, export the reviewed batch. Download
+   the complete ZIP, or individual CSV, Excel, HTML, JSON, and decision-history
+   files. Unzip the bundle before opening its dashboard so download links work.
+7. Reopen an approved or rejected record to change its decision. Earlier exports
+   retain the values and decisions at the time they were created; export again
+   after completing the new review.
+
+The batch selector restores saved progress after restarting the application.
+All uploads, decisions, and export snapshots are stored in `.invoice-review/`,
+which is excluded from Git. The screen is a single-user tool bound to your own
+computer; it has no accounts or hosted service. Use one storage directory per
+workspace. `--data-dir` selects a different local folder; keep custom folders
+containing private invoices outside your public repository.
+
+Uploads are limited to 100 PDFs, 10 MB per file, and 50 MB per request. Filenames
+are sanitized for local storage and must remain unique; the original uploaded
+name is retained in the decision history. Invoice fields can be edited up to
+200 characters, and notes up to 2,000 characters. Decisions from an outdated
+browser tab are rejected with a message to reload the batch.
+
+| Workflow | Which invoices enter reports? | Output behavior |
+| --- | --- | --- |
+| Command line | Validated records without duplicate conflicts | Replaces the five files in the chosen output folder |
+| Browser review | Explicitly approved records after every record has a decision | Creates a separate immutable snapshot and a decision-history JSON |
 
 ## Quick start
 
@@ -148,6 +208,18 @@ rerunning. Keep the five files together so dashboard download links work.
 CSV and JSON amounts retain two decimal places. CSV text that resembles a
 formula is prefixed with an apostrophe for spreadsheet safety.
 
+This replacement behavior applies to the command-line workflow. Browser review
+exports keep separate snapshots and additionally include `review_decisions.json`
+with original and corrected fields, decisions, notes, and timestamps. For those
+exports, `review.csv` lists manually rejected records and the dashboard labels
+them as rejected. The shared `summary.json` key `review_files` counts excluded
+records; in a completed browser export those are all rejected records.
+
+`review_decisions.json` also contains extracted document text and uploaded
+filenames so decisions can be traced to their source. Treat the audit file and
+complete ZIP as private invoice data. Review their contents before sharing an
+export outside your organization.
+
 ## Process your own files
 
 ```powershell
@@ -209,7 +281,9 @@ rejected, the dashboard shows an empty-data message and the complete review queu
 ## Project structure
 
 ```text
-invoice_analytics/       Extraction, validation, batch processing, reports, CLI
+invoice_analytics/       Extraction, validation, reports, CLI, and review service
+invoice_analytics/templates/ Browser review page
+invoice_analytics/static/    Local styles and browser behavior
 data/samples/           Fictional PDFs, including intentional review cases
 data/expected_*.csv      Reference values used by tests
 data/evaluation/        Separately authored PDFs, expected results, and provenance

@@ -122,7 +122,13 @@ def chart_rows(rows: list[dict], label_key: str) -> str:
     )
 
 
-def write_dashboard(path: Path, result: BatchResult, summary: dict) -> None:
+def write_dashboard(path: Path, result: BatchResult, summary: dict, *, reviewed: bool = False) -> None:
+    count_label = "Rejected invoices" if reviewed else "Files requiring review"
+    queue_title = "Rejected invoices" if reviewed else "Review queue"
+    queue_description = (
+        "These invoices were rejected during review and are excluded from spending. Decision notes are listed below."
+        if reviewed else "Each excluded file has a reason. Correct the source document or verify it manually, then rerun the batch."
+    )
     sections = []
     for currency, data in summary["currencies"].items():
         supplier_rows = "".join(
@@ -147,7 +153,8 @@ def write_dashboard(path: Path, result: BatchResult, summary: dict) -> None:
         </section>''')
 
     review_rows = "".join(f'<tr><td>{escape(issue.source_file)}</td><td><code>{escape(issue.code)}</code></td><td>{escape(issue.message)}</td></tr>' for issue in result.issues)
-    review_table = f'<div class="table-wrap"><table><thead><tr><th scope="col">File</th><th scope="col">Reason</th><th scope="col">Action / detail</th></tr></thead><tbody>{review_rows}</tbody></table></div>' if review_rows else '<p>No files require review.</p>'
+    empty_queue = "No invoices were rejected." if reviewed else "No files require review."
+    review_table = f'<div class="table-wrap"><table><thead><tr><th scope="col">File</th><th scope="col">Reason</th><th scope="col">Action / detail</th></tr></thead><tbody>{review_rows}</tbody></table></div>' if review_rows else f'<p>{empty_queue}</p>'
     options = ''.join(f'<option value="{currency}">{currency}</option>' for currency in summary['currencies'])
     document = '''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -162,18 +169,19 @@ header{background:#153b4b;color:#fff;padding:44px max(24px,calc((100% - 1120px)/
 @media print{header{background:white;color:#153b4b}header p{color:#506774}.toolbar{display:none}.currency-panel[hidden]{display:block!important}.card{break-inside:avoid}}
 </style></head><body><header><div class="eyebrow">Invoice Analytics / Operations report</div><h1>From invoices to spending insights.</h1><p>Validated invoice records, supplier spending, and a review queue for documents that need attention.</p></header><main>
 '''
-    document += f'''<div class="status"><article><span>PDFs processed</span><strong>{result.processed}</strong></article><article><span>Accepted invoices</span><strong>{len(result.invoices)}</strong></article><article class="review-count"><span>Files requiring review</span><strong>{len(result.issues)}</strong></article></div>
+    document += f'''<div class="status"><article><span>PDFs processed</span><strong>{result.processed}</strong></article><article><span>Accepted invoices</span><strong>{len(result.invoices)}</strong></article><article class="review-count"><span>{count_label}</span><strong>{len(result.issues)}</strong></article></div>
 <div class="toolbar"><label for="currency">Currency <select id="currency"><option value="all">All currencies</option>{options}</select></label><nav class="downloads" aria-label="Report downloads"><a href="invoices.csv">Invoice CSV</a><a href="spend_report.xlsx">Excel workbook</a><a href="review.csv">Review CSV</a></nav></div>
 <p class="note">Currencies are reported separately. Spending reflects invoiced amounts, not verified payments. Excluded files do not contribute to totals. Months without accepted invoices are omitted.</p>'''
-    document += ''.join(sections) or '<p class="empty">No invoices passed validation. Review the files below before using this batch for analysis.</p>'
-    document += f'<article class="card"><h2>Review queue</h2><p>Each excluded file has a reason. Correct the source document or verify it manually, then rerun the batch.</p>{review_table}</article>'
+    empty_message = "No invoices were approved. All records in this report were rejected." if reviewed else "No invoices passed validation. Review the files below before using this batch for analysis."
+    document += ''.join(sections) or f'<p class="empty">{empty_message}</p>'
+    document += f'<article class="card"><h2>{queue_title}</h2><p>{queue_description}</p>{review_table}</article>'
     document += '''<footer class="note">Generated locally by Invoice Analytics Automation. No external services or exchange-rate conversion are used.</footer></main>
 <script>document.getElementById('currency').addEventListener('change',function(){for(const panel of document.querySelectorAll('.currency-panel')){panel.hidden=this.value!=='all'&&panel.dataset.currency!==this.value;}});</script>
 </body></html>'''
     path.write_text(document, encoding="utf-8")
 
 
-def write_reports(result: BatchResult, output_dir: Path) -> dict:
+def write_reports(result: BatchResult, output_dir: Path, *, reviewed: bool = False) -> dict:
     summary = build_summary(result)
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     # Finish generating all files before replacing reports from a previous run.
@@ -183,7 +191,7 @@ def write_reports(result: BatchResult, output_dir: Path) -> dict:
         write_csv(stage / "review.csv", ISSUE_COLUMNS, [asdict(issue) for issue in result.issues])
         (stage / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
         write_workbook(stage / "spend_report.xlsx", result, summary)
-        write_dashboard(stage / "dashboard.html", result, summary)
+        write_dashboard(stage / "dashboard.html", result, summary, reviewed=reviewed)
         output_dir.mkdir(parents=True, exist_ok=True)
         for name in OUTPUT_NAMES:
             (stage / name).replace(output_dir / name)
